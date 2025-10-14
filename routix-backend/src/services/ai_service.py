@@ -167,37 +167,103 @@ class AIService:
             "description": text[:200]
         }
     
-    async def find_matching_templates(self, analysis: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def find_matching_templates(
+        self, 
+        analysis: Dict[str, Any],
+        db_session = None,
+        limit: int = 5,
+        min_score: float = 0.0
+    ) -> List[Dict[str, Any]]:
         """Find matching templates from the template database."""
+        from src.models.template import Template
+        from src.core.database import AsyncSessionLocal
+        from sqlalchemy import select
         
-        # TODO: Implement template database and matching logic
-        # For now, return mock templates
+        # Use provided session or create new one
+        if db_session is None:
+            async with AsyncSessionLocal() as session:
+                return await self._find_templates_internal(analysis, session, limit, min_score)
+        else:
+            return await self._find_templates_internal(analysis, db_session, limit, min_score)
+    
+    async def _find_templates_internal(
+        self,
+        analysis: Dict[str, Any],
+        db_session,
+        limit: int,
+        min_score: float
+    ) -> List[Dict[str, Any]]:
+        """Internal method to find templates."""
+        from src.models.template import Template
+        from sqlalchemy import select
         
+        # Get all active templates
+        result = await db_session.execute(
+            select(Template).where(Template.is_active == True)
+        )
+        templates = result.scalars().all()
+        
+        if not templates:
+            # Return fallback templates if database is empty
+            return self._get_fallback_templates(analysis)
+        
+        # Calculate match score for each template
+        scored_templates = []
+        for template in templates:
+            score = template.calculate_match_score(analysis)
+            
+            if score >= min_score:
+                scored_templates.append({
+                    "id": template.id,
+                    "name": template.name,
+                    "description": template.description,
+                    "category": template.category,
+                    "style": template.style,
+                    "mood": template.mood,
+                    "primary_color": template.primary_color,
+                    "secondary_color": template.secondary_color,
+                    "elements": template.elements_list,
+                    "tags": template.tags_list,
+                    "preview_image": template.preview_image,
+                    "is_premium": template.is_premium,
+                    "match_score": score,
+                    "usage_count": template.usage_count,
+                    "rating": template.rating
+                })
+        
+        # Sort by match score (descending) and rating
+        scored_templates.sort(
+            key=lambda t: (t["match_score"], t["rating"], t["usage_count"]),
+            reverse=True
+        )
+        
+        # Return top matches
+        return scored_templates[:limit]
+    
+    def _get_fallback_templates(self, analysis: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Get fallback templates when database is empty."""
         category = analysis.get("category", "other")
         style = analysis.get("style", "modern")
         
-        mock_templates = [
+        return [
             {
-                "id": f"template_{category}_1",
+                "id": f"fallback_{category}_1",
                 "name": f"{category.title()} Template 1",
-                "category": category,
-                "style": style,
-                "image_path": f"/templates/{category}_template_1.jpg",
                 "description": f"Professional {category} thumbnail template",
-                "match_score": 0.9
-            },
-            {
-                "id": f"template_{category}_2", 
-                "name": f"{category.title()} Template 2",
                 "category": category,
                 "style": style,
-                "image_path": f"/templates/{category}_template_2.jpg",
-                "description": f"Modern {category} thumbnail template",
-                "match_score": 0.8
+                "mood": analysis.get("mood", "professional"),
+                "primary_color": "#0066FF",
+                "secondary_color": "#FFFFFF",
+                "elements": analysis.get("elements", ["text", "background"]),
+                "tags": [category, style],
+                "preview_image": f"/templates/{category}_template_1.jpg",
+                "is_premium": False,
+                "match_score": 0.7,
+                "usage_count": 0,
+                "rating": 0.0
             }
         ]
-        
-        return mock_templates
     
     async def generate_thumbnail(
         self,

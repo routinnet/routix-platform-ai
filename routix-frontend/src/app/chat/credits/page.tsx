@@ -56,8 +56,39 @@ export default function CreditsPage() {
 
   const handlePurchase = async (packageId: string) => {
     setSelectedPlan(packageId)
-    // TODO: Implement payment integration
-    console.log('Purchase package:', packageId)
+    
+    try {
+      // Step 1: Create payment intent
+      const intentResponse = await userAPI.createPaymentIntent(packageId)
+      const paymentIntent = intentResponse.data
+      
+      // Step 2: In production, you would:
+      // - Show payment form (Stripe, PayPal, etc.)
+      // - Collect payment method
+      // - Process payment
+      
+      // For development/demo, we'll simulate a successful payment
+      const mockPaymentMethodId = `pm_mock_${Date.now()}`
+      
+      // Step 3: Process payment
+      const purchaseResponse = await userAPI.purchaseCredits(packageId, mockPaymentMethodId)
+      
+      if (purchaseResponse.data.success) {
+        // Show success message
+        alert(`Successfully purchased ${purchaseResponse.data.credits_added} credits!\nNew balance: ${purchaseResponse.data.new_balance}`)
+        
+        // Refresh data
+        window.location.reload()
+      } else {
+        alert('Payment failed. Please try again.')
+      }
+      
+    } catch (error: any) {
+      console.error('Purchase error:', error)
+      alert(error.response?.data?.detail || 'Purchase failed. Please try again.')
+    } finally {
+      setSelectedPlan(null)
+    }
   }
 
   return (
