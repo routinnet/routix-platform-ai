@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc
 from typing import List
-from uuid import UUID
 import json
 
 from src.core.database import get_db
@@ -142,7 +141,7 @@ async def get_generations(
 
 @router.get("/generations/{generation_id}", response_model=GenerationResponse)
 async def get_generation(
-    generation_id: UUID,
+    generation_id: str,
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -170,7 +169,7 @@ async def get_generation(
 
 @router.get("/generations/{generation_id}/status", response_model=GenerationProgress)
 async def get_generation_status(
-    generation_id: UUID,
+    generation_id: str,
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -200,7 +199,7 @@ async def get_generation_status(
 
 @router.delete("/generations/{generation_id}")
 async def cancel_generation(
-    generation_id: UUID,
+    generation_id: str,
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):

@@ -54,7 +54,7 @@ class Message(Base):
     role = Column(String(20), nullable=False)  # "user" or "assistant"
     content = Column(Text, nullable=False)
     attachments = Column(Text, nullable=True)  # JSON string for file attachments
-    message_metadata = Column(Text, nullable=True)  # JSON string for additional data
+    metadata = Column(Text, nullable=True)  # JSON string for additional data
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships

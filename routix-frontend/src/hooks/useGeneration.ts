@@ -10,9 +10,6 @@ export function useGenerations() {
   const generationsQuery = useQuery({
     queryKey: ['generations'],
     queryFn: () => generationAPI.getGenerations().then(res => res.data.generations),
-    onSuccess: (data: Generation[]) => {
-      setGenerations(data)
-    },
   })
 
   const createGenerationMutation = useMutation({
@@ -67,15 +64,6 @@ export function useGeneration(generationId: string | null) {
         return false
       }
       return 2000 // Poll every 2 seconds
-    },
-    onSuccess: (data) => {
-      if (data && generationId) {
-        updateGeneration(generationId, {
-          status: data.status,
-          progress: data.progress,
-          error_message: data.message
-        })
-      }
     },
   })
 
