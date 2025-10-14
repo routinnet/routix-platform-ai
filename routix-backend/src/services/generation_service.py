@@ -72,14 +72,29 @@ class GenerationService:
             # Step 2: Find matching templates (30% progress)
             await self._update_progress(generation, 30, "Finding matching templates...", db)
             
-            templates = await self.ai_service.find_matching_templates(analysis)
+            templates = await self.ai_service.find_matching_templates(
+                analysis=analysis,
+                db_session=db,
+                limit=5,
+                min_score=0.0
+            )
             
             if not templates:
                 await self._mark_generation_failed(generation, "No matching templates found", db)
                 return
             
-            # Select best template
+            # Select best template and increment its usage
             best_template = templates[0]  # Highest match score
+            
+            # Update template usage count
+            from src.models.template import Template
+            template_result = await db.execute(
+                select(Template).where(Template.id == best_template["id"])
+            )
+            template_obj = template_result.scalar_one_or_none()
+            if template_obj:
+                template_obj.increment_usage()
+                await db.commit()
             
             # Step 3: Generate thumbnail (60% progress)
             await self._update_progress(generation, 60, "Generating thumbnail...", db)

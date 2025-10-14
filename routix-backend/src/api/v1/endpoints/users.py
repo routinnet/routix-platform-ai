@@ -62,40 +62,132 @@ async def get_user_credits(
     }
 
 
-@router.post("/credits/purchase")
-async def purchase_credits(
-    amount: int,
+@router.post("/credits/purchase/intent")
+async def create_payment_intent(
+    package_id: str,
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Purchase credits (placeholder for payment integration)."""
+    """Create a payment intent for credit purchase."""
+    from src.services.payment_service import PaymentService
     
-    if amount <= 0:
+    payment_service = PaymentService()
+    
+    try:
+        payment_intent = await payment_service.create_payment_intent(
+            user=current_user,
+            package_id=package_id,
+            db=db
+        )
+        
+        return payment_intent
+        
+    except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Amount must be positive"
+            detail=str(e)
         )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to create payment intent"
+        )
+
+
+@router.post("/credits/purchase")
+async def purchase_credits(
+    package_id: str,
+    payment_method_id: str,
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Process credit purchase with payment.
     
-    # TODO: Integrate with payment processor
-    # For now, just add credits (this would be called after successful payment)
+    This endpoint processes the actual payment and adds credits to the user account.
+    """
+    from src.services.payment_service import PaymentService
     
-    current_user.add_credits(amount)
+    payment_service = PaymentService()
     
-    # Create transaction record
-    transaction = CreditTransaction(
-        user_id=current_user.id,
-        type="purchase",
-        amount=amount,
-        description=f"Purchased {amount} credits"
-    )
+    try:
+        result = await payment_service.process_payment(
+            user=current_user,
+            package_id=package_id,
+            payment_method_id=payment_method_id,
+            db=db
+        )
+        
+        if not result["success"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.get("error", "Payment failed")
+            )
+        
+        return {
+            "success": True,
+            "message": f"Successfully purchased {result['credits_added']} credits",
+            "transaction_id": result["transaction_id"],
+            "credits_added": result["credits_added"],
+            "new_balance": result["new_balance"],
+            "package": result["package"]
+        }
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        print(f"Payment error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Payment processing failed"
+        )
+
+
+@router.get("/credits/packages")
+async def get_credit_packages():
+    """Get available credit packages."""
+    from src.services.payment_service import PaymentService
     
-    db.add(transaction)
-    await db.commit()
+    payment_service = PaymentService()
+    packages = payment_service.get_packages()
     
-    return {
-        "message": f"Successfully purchased {amount} credits",
-        "new_balance": current_user.credits
-    }
+    return {"packages": list(packages.values())}
+
+
+@router.post("/credits/webhook")
+async def payment_webhook(
+    event_type: str,
+    event_data: dict,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Handle payment gateway webhooks.
+    
+    This endpoint receives and processes webhook events from the payment gateway.
+    In production, this should verify webhook signatures for security.
+    """
+    from src.services.payment_service import PaymentService
+    
+    payment_service = PaymentService()
+    
+    try:
+        result = await payment_service.handle_webhook(
+            event_type=event_type,
+            event_data=event_data,
+            db=db
+        )
+        
+        return result
+        
+    except Exception as e:
+        print(f"Webhook error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Webhook processing failed"
+        )
 
 
 @router.get("/usage-stats")

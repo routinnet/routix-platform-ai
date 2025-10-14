@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from src.models.algorithm import Algorithm
 from src.models.user import User
+from src.models.template import Template
 from src.core.security import get_password_hash
 
 
@@ -91,6 +92,26 @@ async def seed_test_user(db: AsyncSession):
         print("Test user already exists")
 
 
+async def seed_templates(db: AsyncSession):
+    """Seed the database with template data."""
+    
+    templates_data = Template.get_seed_templates()
+    
+    for template_data in templates_data:
+        # Check if template already exists by name
+        result = await db.execute(
+            select(Template).where(Template.name == template_data["name"])
+        )
+        existing = result.scalar_one_or_none()
+        
+        if not existing:
+            template = Template(**template_data)
+            db.add(template)
+    
+    await db.commit()
+    print("Templates seeded successfully")
+
+
 async def seed_database(db: AsyncSession):
     """Seed the database with initial data."""
     
@@ -98,5 +119,6 @@ async def seed_database(db: AsyncSession):
     
     await seed_algorithms(db)
     await seed_test_user(db)
+    await seed_templates(db)
     
     print("Database seeding completed")

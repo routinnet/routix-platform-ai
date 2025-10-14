@@ -5,6 +5,8 @@ import { Sparkles, X, Clock, Zap } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Generation } from '@/types'
 import { useGeneration } from '@/hooks/useGeneration'
+import { generationAPI } from '@/lib/api'
+import { useQueryClient } from '@tanstack/react-query'
 
 interface GenerationProgressProps {
   generation: Generation
@@ -13,6 +15,8 @@ interface GenerationProgressProps {
 export function GenerationProgress({ generation }: GenerationProgressProps) {
   const { status } = useGeneration(generation.id)
   const [timeElapsed, setTimeElapsed] = useState(0)
+  const [isCancelling, setIsCancelling] = useState(false)
+  const queryClient = useQueryClient()
 
   // Track elapsed time
   useEffect(() => {
@@ -110,14 +114,35 @@ export function GenerationProgress({ generation }: GenerationProgressProps) {
           
           {isActive && (
             <button
-              onClick={() => {
-                // TODO: Implement cancel generation
-                console.log('Cancel generation:', generation.id)
+              onClick={async () => {
+                if (isCancelling) return
+                
+                setIsCancelling(true)
+                try {
+                  await generationAPI.cancelGeneration(generation.id)
+                  
+                  // Invalidate queries to refresh data
+                  queryClient.invalidateQueries({ queryKey: ['generation', generation.id] })
+                  queryClient.invalidateQueries({ queryKey: ['generations'] })
+                  
+                  // Show success message (optional)
+                  console.log('Generation cancelled successfully')
+                } catch (error) {
+                  console.error('Failed to cancel generation:', error)
+                  // Show error message (optional)
+                } finally {
+                  setIsCancelling(false)
+                }
               }}
-              className="p-1 text-gray-400 hover:text-red-500 transition-colors"
+              disabled={isCancelling}
+              className="p-1 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               title="Cancel generation"
             >
-              <X className="w-4 h-4" />
+              {isCancelling ? (
+                <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <X className="w-4 h-4" />
+              )}
             </button>
           )}
         </div>

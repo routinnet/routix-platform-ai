@@ -261,15 +261,161 @@ async def chat(
     await db.commit()
     await db.refresh(user_message)
     
-    # TODO: Process message with AI service and determine if generation is needed
-    # For now, return a simple response
-    requires_generation = "thumbnail" in chat_data.message.lower() or "generate" in chat_data.message.lower()
+    # Process message with AI service
+    from src.services.ai_service import AIService
+    ai_service = AIService()
+    
+    # Analyze the message to determine intent
+    requires_generation = await _analyze_chat_intent(
+        chat_data.message,
+        ai_service
+    )
+    
+    # Generate AI response
+    assistant_response = await _generate_assistant_response(
+        chat_data.message,
+        requires_generation,
+        ai_service
+    )
+    
+    # Add assistant message
+    assistant_message = Message(
+        conversation_id=conversation_id,
+        role="assistant",
+        content=assistant_response,
+        metadata=json.dumps({"requires_generation": requires_generation})
+    )
+    
+    db.add(assistant_message)
+    await db.commit()
+    await db.refresh(assistant_message)
     
     return ChatResponse(
-        message=MessageResponse.model_validate(user_message),
+        message=MessageResponse.model_validate(assistant_message),
         conversation_id=conversation_id,
         requires_generation=requires_generation
     )
+
+
+async def _analyze_chat_intent(message: str, ai_service: AIService) -> bool:
+    """Analyze chat message to determine if thumbnail generation is needed."""
+    
+    message_lower = message.lower()
+    
+    # Keywords that indicate generation intent
+    generation_keywords = [
+        "create", "generate", "make", "design", "build",
+        "thumbnail", "image", "picture", "visual",
+        "need", "want", "can you", "please", "help me with"
+    ]
+    
+    # Check for generation keywords
+    has_generation_keyword = any(
+        keyword in message_lower for keyword in generation_keywords
+    )
+    
+    # More sophisticated intent detection with AI (if available)
+    if ai_service.openai_client:
+        try:
+            response = ai_service.openai_client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are an intent classifier. Determine if the user wants to generate a thumbnail. Respond with only 'yes' or 'no'."
+                    },
+                    {
+                        "role": "user",
+                        "content": message
+                    }
+                ],
+                temperature=0.1,
+                max_tokens=10
+            )
+            
+            intent = response.choices[0].message.content.strip().lower()
+            return "yes" in intent
+            
+        except Exception as e:
+            print(f"Error in AI intent detection: {e}")
+            # Fall back to keyword-based detection
+            return has_generation_keyword
+    
+    return has_generation_keyword
+
+
+async def _generate_assistant_response(
+    user_message: str,
+    requires_generation: bool,
+    ai_service: AIService
+) -> str:
+    """Generate appropriate assistant response."""
+    
+    if requires_generation:
+        # Response for generation requests
+        responses = [
+            "I'd be happy to help you create a thumbnail! Could you provide more details about what you have in mind?",
+            "Great! I can help you generate a thumbnail. What style and theme would you like?",
+            "Let me help you create an amazing thumbnail! Tell me more about your vision.",
+            "I'll assist you with thumbnail generation. What's the main message or theme you want to convey?"
+        ]
+        
+        # Use AI to generate personalized response if available
+        if ai_service.openai_client:
+            try:
+                response = ai_service.openai_client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": "You are a helpful assistant for a thumbnail generation platform. Respond warmly and help users clarify their thumbnail creation needs. Keep responses concise (2-3 sentences)."
+                        },
+                        {
+                            "role": "user",
+                            "content": user_message
+                        }
+                    ],
+                    temperature=0.7,
+                    max_tokens=150
+                )
+                
+                return response.choices[0].message.content.strip()
+                
+            except Exception as e:
+                print(f"Error generating AI response: {e}")
+                # Fall back to template response
+                import random
+                return random.choice(responses)
+        else:
+            import random
+            return random.choice(responses)
+    else:
+        # Response for general conversation
+        if ai_service.openai_client:
+            try:
+                response = ai_service.openai_client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": "You are a helpful assistant for a thumbnail generation platform. Provide helpful information and guide users. Keep responses concise (2-3 sentences)."
+                        },
+                        {
+                            "role": "user",
+                            "content": user_message
+                        }
+                    ],
+                    temperature=0.7,
+                    max_tokens=150
+                )
+                
+                return response.choices[0].message.content.strip()
+                
+            except Exception as e:
+                print(f"Error generating AI response: {e}")
+                return "I'm here to help you create amazing thumbnails! How can I assist you today?"
+        else:
+            return "I'm here to help you create amazing thumbnails! How can I assist you today?"
 
 
 @router.get("/conversations/{conversation_id}/messages", response_model=List[MessageResponse])
