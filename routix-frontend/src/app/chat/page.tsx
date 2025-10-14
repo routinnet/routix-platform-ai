@@ -62,34 +62,41 @@ export default function ChatPage() {
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="text-4xl md:text-5xl font-bold text-gray-900 mb-12"
+              transition={{ duration: 0.8, delay: 0.4, ease: [0.19, 1, 0.22, 1] }}
+              className="text-4xl md:text-5xl font-bold text-gray-900 mb-12 tracking-tight"
             >
-              What would you like to create today?
+              What's on your mind? ✨
             </motion.h1>
 
             {/* Quick Actions */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              className="grid gap-4 mb-8"
+              transition={{ duration: 0.8, delay: 0.6, ease: [0.19, 1, 0.22, 1] }}
+              className="grid gap-3 mb-8"
             >
               {[
-                'Create a thumbnail like this one but with my logo',
-                'Gaming thumbnail with neon effects',
-                'Professional tech review thumbnail',
-                'Tutorial thumbnail with clear text'
-              ].map((prompt, index) => (
+                { icon: '🎨', text: 'Custom thumbnail with logo' },
+                { icon: '🎮', text: 'Gaming style' },
+                { icon: '💼', text: 'Professional look' },
+                { icon: '📚', text: 'Tutorial style' }
+              ].map((item, index) => (
                 <motion.button
                   key={index}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, delay: 0.8 + index * 0.1 }}
-                  onClick={() => handleStartChat(prompt)}
-                  className="glass-card p-4 rounded-2xl text-left hover:shadow-xl smooth-transition hover-lift"
+                  transition={{ 
+                    duration: 0.6, 
+                    delay: 0.8 + index * 0.1,
+                    ease: [0.34, 1.56, 0.64, 1]
+                  }}
+                  onClick={() => handleStartChat(item.text)}
+                  className="glass-card p-4 rounded-2xl text-left hover:shadow-xl ultra-smooth hover-lift group"
                 >
-                  <p className="text-gray-700 font-medium">{prompt}</p>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl group-hover:scale-110 ultra-smooth">{item.icon}</span>
+                    <p className="text-gray-700 font-semibold">{item.text}</p>
+                  </div>
                 </motion.button>
               ))}
             </motion.div>
@@ -154,26 +161,25 @@ export default function ChatPage() {
                   ) : (
                     <div className="glass-card max-w-2xl w-full rounded-3xl p-8 shadow-2xl">
                       <div className="text-center space-y-6">
-                        <div className="text-2xl font-bold text-gray-900">
-                          Syncing with Routix Intelligence...
+                        <div className="text-2xl font-bold text-gray-900 mb-6">
+                          ✨ Creating magic...
                         </div>
                         
-                        <div className="glass-card-dark rounded-2xl p-6 space-y-4">
+                        <div className="glass-card-dark rounded-3xl p-6 space-y-4">
                           <div className="flex items-center gap-3">
-                            <div className="status-badge w-3 h-3 bg-green-500 rounded-full"></div>
-                            <p className="text-gray-800 font-semibold text-lg">Got it ROUTIN 👋</p>
+                            <div className="status-badge w-2.5 h-2.5 bg-green-500 rounded-full"></div>
+                            <p className="text-gray-800 font-bold">Got it! 👋</p>
                           </div>
-                          <p className="text-gray-700">Analyzing your request...</p>
-                          <p className="text-gray-700">Generating your thumbnail preview...</p>
+                          <p className="text-gray-700 font-medium">🔍 Analyzing...</p>
+                          <p className="text-gray-700 font-medium">🎨 Generating...</p>
                         </div>
 
-                        <div className="flex items-center justify-center gap-2 text-gray-600">
+                        <div className="flex items-center justify-center gap-3 text-gray-600 mt-4">
                           <div className="loading-dots">
                             <span></span>
                             <span></span>
                             <span></span>
                           </div>
-                          <span>Generating response...</span>
                         </div>
                       </div>
                     </div>

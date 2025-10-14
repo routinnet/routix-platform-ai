@@ -44,22 +44,20 @@ export function LandingPage() {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="text-5xl md:text-6xl font-bold text-white mb-4"
+            transition={{ duration: 0.8, delay: 0.4, ease: [0.19, 1, 0.22, 1] }}
+            className="text-5xl md:text-7xl font-bold text-white mb-6 tracking-tight"
           >
-            Hey Armando!
-            <br />
-            <span className="text-white/90">Can I help you with anything?</span>
+            Hey Armando! 👋
           </motion.h1>
 
           {/* Subtitle */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="text-xl text-white/80 mb-12"
+            transition={{ duration: 0.8, delay: 0.6, ease: [0.19, 1, 0.22, 1] }}
+            className="text-xl md:text-2xl text-white/70 mb-12 font-light"
           >
-            Ready to assist you with anything you need.
+            What can I create for you?
           </motion.p>
 
           {/* Input Section */}
@@ -94,10 +92,10 @@ export function LandingPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 1 }}
-            className="mt-8 text-white/70 text-sm"
+            transition={{ duration: 0.8, delay: 1.2, ease: [0.19, 1, 0.22, 1] }}
+            className="mt-6 text-white/60 text-sm font-light"
           >
-            <p>Try: "Create a thumbnail like this one but with my logo"</p>
+            <p>💡 Try: "Gaming thumbnail with neon effects"</p>
           </motion.div>
         </motion.div>
 
@@ -105,16 +103,20 @@ export function LandingPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 1.2 }}
+          transition={{ duration: 0.8, delay: 1.4, ease: [0.19, 1, 0.22, 1] }}
           className="flex flex-wrap justify-center gap-3"
         >
-          {['AI-Powered', 'Lightning Fast', 'No Design Skills', 'Professional Quality'].map((feature, index) => (
+          {['✨ AI-Powered', '⚡ Fast', '🎨 No Skills Needed'].map((feature, index) => (
             <motion.div
               key={feature}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 1.4 + index * 0.1 }}
-              className="glass-card px-6 py-3 rounded-full text-white/90 font-medium text-sm shadow-lg hover-lift smooth-transition"
+              transition={{ 
+                duration: 0.6, 
+                delay: 1.6 + index * 0.15,
+                ease: [0.34, 1.56, 0.64, 1]
+              }}
+              className="glass-card px-5 py-2.5 rounded-full text-white/90 font-medium text-sm shadow-lg hover-lift ultra-smooth backdrop-blur-xl"
             >
               {feature}
             </motion.div>
