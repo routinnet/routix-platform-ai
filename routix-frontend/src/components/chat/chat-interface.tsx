@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, Paperclip, Image, Loader2, Sparkles } from 'lucide-react'
+import { ArrowUp, Paperclip, Image, Loader2, Sparkles } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useConversation } from '@/hooks/useChat'
 import { useGenerations } from '@/hooks/useGeneration'
@@ -72,25 +72,27 @@ export function ChatInterface({ conversationId }: ChatInterfaceProps) {
   }
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
+    <div className="h-full flex flex-col gradient-bg-main">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto scrollbar-thin p-6 space-y-6">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center max-w-md">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="w-8 h-8 text-white" />
+              <div className="glass-card w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl float-animation">
+                <div className="text-4xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  RX
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">
                 Start Creating Amazing Thumbnails
               </h3>
-              <p className="text-gray-600 mb-6">
+              <p className="text-gray-700 mb-6">
                 Describe the thumbnail you want to create, upload reference images, 
                 and let our AI generate stunning results for you.
               </p>
-              <div className="text-sm text-gray-500">
-                <p>Try saying something like:</p>
-                <p className="italic mt-1">
+              <div className="glass-card rounded-2xl p-4 text-sm text-gray-700">
+                <p className="font-semibold mb-1">Try saying something like:</p>
+                <p className="italic">
                   "Create a gaming thumbnail for my Fortnite video with bright colors and action scene"
                 </p>
               </div>
@@ -103,7 +105,7 @@ export function ChatInterface({ conversationId }: ChatInterfaceProps) {
                 key={msg.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
+                transition={{ duration: 0.4, delay: index * 0.05 }}
               >
                 <ChatMessage message={msg} />
               </motion.div>
@@ -113,7 +115,7 @@ export function ChatInterface({ conversationId }: ChatInterfaceProps) {
 
         {/* Active Generations */}
         {activeGenerations.length > 0 && (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {activeGenerations.map((generation) => (
               <GenerationProgress key={generation.id} generation={generation} />
             ))}
@@ -125,17 +127,19 @@ export function ChatInterface({ conversationId }: ChatInterfaceProps) {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-2 text-gray-500"
+            className="flex items-center gap-3"
           >
-            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-              <Sparkles className="w-4 h-4" />
+            <div className="glass-card w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg">
+              <Sparkles className="w-5 h-5 text-blue-600" />
             </div>
-            <div className="loading-dots">
-              <span></span>
-              <span></span>
-              <span></span>
+            <div className="glass-card px-4 py-2 rounded-2xl flex items-center gap-2">
+              <div className="loading-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <span className="text-sm text-gray-700 font-medium">AI is thinking...</span>
             </div>
-            <span className="text-sm">AI is thinking...</span>
           </motion.div>
         )}
 
@@ -143,39 +147,15 @@ export function ChatInterface({ conversationId }: ChatInterfaceProps) {
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-gray-200 bg-white p-4">
-        {/* Attachments Preview */}
-        {attachments.length > 0 && (
-          <div className="mb-4">
-            <div className="flex flex-wrap gap-2">
-              {attachments.map((attachment, index) => (
-                <div
-                  key={index}
-                  className="relative bg-gray-100 rounded-lg p-2 flex items-center gap-2"
-                >
-                  <Image className="w-4 h-4 text-gray-600" />
-                  <span className="text-sm text-gray-700 truncate max-w-32">
-                    {attachment.split('/').pop()}
-                  </span>
-                  <button
-                    onClick={() => removeAttachment(index)}
-                    className="text-gray-400 hover:text-red-500 transition-colors"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
+      <div className="glass-card mx-6 mb-6 rounded-3xl p-2 shadow-2xl">
         {/* Input Form */}
-        <form onSubmit={handleSubmit} className="flex items-end gap-3">
+        <form onSubmit={handleSubmit} className="flex items-center gap-3">
           {/* File Upload Button */}
           <button
             type="button"
             onClick={() => setShowFileUpload(true)}
-            className="flex-shrink-0 p-3 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex-shrink-0 p-3 text-gray-600 hover:bg-gray-100/50 rounded-xl transition-all hover-lift"
+            title="Upload file"
           >
             <Paperclip className="w-5 h-5" />
           </button>
@@ -188,7 +168,7 @@ export function ChatInterface({ conversationId }: ChatInterfaceProps) {
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Describe the thumbnail you want to create..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none max-h-32 scrollbar-thin"
+              className="w-full bg-transparent border-none outline-none text-lg text-gray-800 placeholder-gray-500 px-2 py-3 resize-none max-h-32 scrollbar-thin"
               rows={1}
               disabled={isSending}
             />
@@ -198,20 +178,38 @@ export function ChatInterface({ conversationId }: ChatInterfaceProps) {
           <button
             type="submit"
             disabled={(!message.trim() && attachments.length === 0) || isSending}
-            className="flex-shrink-0 p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-shrink-0 p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl hover:shadow-lg transition-all hover-lift disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSending ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-6 h-6 animate-spin" />
             ) : (
-              <Send className="w-5 h-5" />
+              <ArrowUp className="w-6 h-6" />
             )}
           </button>
         </form>
 
-        {/* Helper Text */}
-        <div className="mt-2 text-xs text-gray-500 text-center">
-          Press Enter to send, Shift+Enter for new line
-        </div>
+        {/* Attachments Preview */}
+        {attachments.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {attachments.map((attachment, index) => (
+              <div
+                key={index}
+                className="glass-card-dark rounded-xl p-2 flex items-center gap-2"
+              >
+                <Image className="w-4 h-4 text-gray-600" />
+                <span className="text-sm text-gray-700 truncate max-w-32">
+                  {attachment.split('/').pop()}
+                </span>
+                <button
+                  onClick={() => removeAttachment(index)}
+                  className="text-gray-500 hover:text-red-500 transition-colors"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* File Upload Modal */}

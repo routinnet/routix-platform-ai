@@ -29,8 +29,8 @@ export function ChatMessage({ message }: ChatMessageProps) {
     <div className={`flex gap-3 ${isUser ? 'justify-end' : 'justify-start'}`}>
       {/* Avatar */}
       {!isUser && (
-        <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-          <Sparkles className="w-4 h-4 text-white" />
+        <div className="flex-shrink-0 w-10 h-10 glass-card rounded-2xl flex items-center justify-center shadow-lg">
+          <Sparkles className="w-5 h-5 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent" style={{ WebkitTextFillColor: 'transparent', WebkitBackgroundClip: 'text' }} />
         </div>
       )}
 
@@ -38,10 +38,10 @@ export function ChatMessage({ message }: ChatMessageProps) {
       <div className={`max-w-2xl ${isUser ? 'order-first' : ''}`}>
         {/* Message Bubble */}
         <div
-          className={`rounded-2xl px-4 py-3 ${
+          className={`rounded-3xl px-5 py-3.5 shadow-lg smooth-transition ${
             isUser
-              ? 'bg-blue-600 text-white ml-auto'
-              : 'bg-white border border-gray-200 text-gray-900'
+              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white ml-auto'
+              : 'glass-card text-gray-900'
           }`}
         >
           {/* Attachments */}
@@ -147,8 +147,8 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
       {/* User Avatar */}
       {isUser && (
-        <div className="flex-shrink-0 w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-          <User className="w-4 h-4 text-gray-600" />
+        <div className="flex-shrink-0 w-10 h-10 glass-card rounded-2xl flex items-center justify-center shadow-lg">
+          <User className="w-5 h-5 text-gray-700" />
         </div>
       )}
     </div>

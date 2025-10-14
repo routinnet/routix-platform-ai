@@ -88,17 +88,17 @@ export function GenerationProgress({ generation }: GenerationProgressProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -10 }}
-      className="bg-white border border-gray-200 rounded-xl p-4"
+      className="glass-card rounded-3xl p-6 shadow-xl"
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className={`w-3 h-3 rounded-full ${statusInfo.color} ${isActive ? 'animate-pulse' : ''}`} />
-          <span className="text-sm font-medium text-gray-900">
+          <div className={`status-badge w-3 h-3 rounded-full ${statusInfo.color}`} />
+          <span className="text-sm font-semibold text-gray-900">
             {statusInfo.text}
           </span>
           {isActive && (
-            <div className="flex items-center gap-1 text-xs text-gray-500">
+            <div className="flex items-center gap-1 text-xs text-gray-600 glass-card-dark px-3 py-1 rounded-full">
               <Clock className="w-3 h-3" />
               {formatTime(timeElapsed)}
             </div>
@@ -107,7 +107,7 @@ export function GenerationProgress({ generation }: GenerationProgressProps) {
 
         <div className="flex items-center gap-2">
           {generation.credits_used && (
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-600 glass-card-dark px-3 py-1 rounded-full font-medium">
               {generation.credits_used} credits
             </span>
           )}
@@ -135,7 +135,7 @@ export function GenerationProgress({ generation }: GenerationProgressProps) {
                 }
               }}
               disabled={isCancelling}
-              className="p-1 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               title="Cancel generation"
             >
               {isCancelling ? (
@@ -150,44 +150,43 @@ export function GenerationProgress({ generation }: GenerationProgressProps) {
 
       {/* Progress Bar */}
       {isActive && (
-        <div className="mb-3">
-          <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-            <span>{statusInfo.description}</span>
-            <span>{progress}%</span>
+        <div className="mb-4">
+          <div className="flex items-center justify-between text-xs text-gray-600 mb-2">
+            <span className="font-medium">{statusInfo.description}</span>
+            <span className="glass-card-dark px-2 py-1 rounded-full font-bold">{progress}%</span>
           </div>
           
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
             <motion.div
-              className="bg-blue-500 h-2 rounded-full progress-bar"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 h-2.5 rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
             />
           </div>
         </div>
       )}
 
       {/* Generation Details */}
-      <div className="space-y-2">
-        <div className="flex items-start gap-2">
-          <Sparkles className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+      <div className="space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="glass-card-dark p-2 rounded-xl">
+            <Sparkles className="w-4 h-4 text-blue-600" />
+          </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm text-gray-900 truncate">
+            <p className="text-sm text-gray-900 font-medium line-clamp-2">
               {generation.prompt}
             </p>
             
-            <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
-              <span>Algorithm: {generation.algorithm_id}</span>
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              <span className="text-xs glass-card-dark px-2 py-1 rounded-full text-gray-700">
+                <Zap className="w-3 h-3 inline mr-1" />
+                {generation.algorithm_id}
+              </span>
               
               {generation.started_at && (
-                <span>
-                  Started: {new Date(generation.started_at).toLocaleTimeString()}
-                </span>
-              )}
-              
-              {generation.completed_at && (
-                <span>
-                  Completed: {new Date(generation.completed_at).toLocaleTimeString()}
+                <span className="text-xs text-gray-500">
+                  {new Date(generation.started_at).toLocaleTimeString()}
                 </span>
               )}
             </div>
@@ -196,8 +195,8 @@ export function GenerationProgress({ generation }: GenerationProgressProps) {
 
         {/* Error Message */}
         {generation.status === 'failed' && generation.error_message && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-2">
-            <p className="text-sm text-red-600">
+          <div className="glass-card-dark rounded-2xl p-3 border-l-4 border-red-500">
+            <p className="text-sm text-red-600 font-medium">
               {generation.error_message}
             </p>
           </div>
@@ -205,18 +204,18 @@ export function GenerationProgress({ generation }: GenerationProgressProps) {
 
         {/* Success Message */}
         {generation.status === 'completed' && generation.result_url && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-2">
+          <div className="glass-card-dark rounded-2xl p-3 border-l-4 border-green-500">
             <div className="flex items-center justify-between">
-              <p className="text-sm text-green-600">
-                Thumbnail generated successfully!
+              <p className="text-sm text-green-700 font-semibold">
+                ✓ Thumbnail generated successfully!
               </p>
               <a
                 href={generation.result_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-green-600 hover:text-green-700 underline"
+                className="text-xs text-green-600 hover:text-green-700 font-medium hover-lift"
               >
-                View Result
+                View →
               </a>
             </div>
           </div>
