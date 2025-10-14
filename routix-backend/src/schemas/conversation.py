@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 class MessageBase(BaseModel):
-    role: str = Field(..., pattern="^(user|assistant)$")
+    role: str = Field(..., pattern=r"^(user|assistant)$")
     content: str = Field(..., min_length=1)
     attachments: Optional[str] = None
     metadata: Optional[str] = None

@@ -10,9 +10,6 @@ export function useConversations() {
   const conversationsQuery = useQuery({
     queryKey: ['conversations'],
     queryFn: () => chatAPI.getConversations().then(res => res.data.conversations),
-    onSuccess: (data: Conversation[]) => {
-      setConversations(data)
-    },
   })
 
   const createConversationMutation = useMutation({
@@ -52,11 +49,6 @@ export function useConversation(conversationId: string | null) {
     queryKey: ['conversation', conversationId],
     queryFn: () => conversationId ? chatAPI.getConversation(conversationId).then(res => res.data) : null,
     enabled: !!conversationId,
-    onSuccess: (data: Conversation) => {
-      if (data) {
-        setCurrentConversation(data)
-      }
-    },
   })
 
   const messagesQuery = useQuery({

@@ -184,7 +184,7 @@ async def upload_multiple_files(
     }
 
 
-@router.delete("/files/{filename}")
+@router.delete("/{filename}")
 async def delete_file(
     filename: str,
     current_user: User = Depends(get_current_active_user)
@@ -210,7 +210,7 @@ async def delete_file(
         )
 
 
-@router.get("/files")
+@router.get("/")
 async def list_user_files(
     current_user: User = Depends(get_current_active_user)
 ):

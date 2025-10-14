@@ -48,9 +48,6 @@ export function useAuth() {
     queryKey: ['user', 'profile'],
     queryFn: () => userAPI.getProfile().then(res => res.data),
     enabled: isAuthenticated,
-    onSuccess: (data: User) => {
-      updateUser(data)
-    },
   })
 
   const updateProfileMutation = useMutation({

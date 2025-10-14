@@ -7,18 +7,23 @@ import { useConversations } from '@/hooks/useChat'
 import { motion } from 'framer-motion'
 
 export default function ChatPage() {
-  const { createConversation, isCreating } = useConversations()
   const router = useRouter()
+  const { createConversation, isCreating } = useConversations()
 
-  const handleStartNewChat = async () => {
-    try {
-      const response = await createConversation({ title: 'New Conversation' })
-      if (response?.data?.id) {
-        router.push(`/chat/${response.data.id}`)
+  const handleStartNewChat = () => {
+    createConversation(
+      { title: 'New Conversation' },
+      {
+        onSuccess: (response) => {
+          if (response?.data?.id) {
+            router.push(`/chat/${response.data.id}`)
+          }
+        },
+        onError: (error) => {
+          console.error('Failed to create conversation:', error)
+        }
       }
-    } catch (error) {
-      console.error('Failed to create conversation:', error)
-    }
+    )
   }
 
   const examples = [
