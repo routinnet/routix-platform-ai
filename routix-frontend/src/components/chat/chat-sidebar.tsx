@@ -39,20 +39,22 @@ export function ChatSidebar() {
   }
 
   const sidebarContent = (
-    <div className="h-full flex flex-col bg-white border-r border-gray-200">
+    <div className="h-full flex flex-col glass-card border-r border-white/30">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-white/30">
         <div className="flex items-center justify-between mb-4">
-          <Link href="/chat" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
+          <Link href="/chat" className="flex items-center space-x-2 hover-lift smooth-transition">
+            <div className="glass-card-dark w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="text-2xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                RX
+              </div>
             </div>
             <span className="text-xl font-bold text-gray-900">Routix</span>
           </Link>
           
           <button
             onClick={() => setSidebarOpen(false)}
-            className="md:hidden p-1 hover:bg-gray-100 rounded-lg transition-colors"
+            className="md:hidden p-2 hover:bg-white/50 rounded-xl transition-all"
           >
             <X className="w-5 h-5" />
           </button>
@@ -61,7 +63,7 @@ export function ChatSidebar() {
         {/* New Chat Button */}
         <button
           onClick={handleNewChat}
-          className="w-full flex items-center gap-3 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="w-full flex items-center justify-center gap-3 px-4 py-3.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl hover:shadow-xl transition-all font-semibold hover-lift"
         >
           <Plus className="w-5 h-5" />
           New Chat
@@ -70,46 +72,50 @@ export function ChatSidebar() {
 
       {/* Conversations List */}
       <div className="flex-1 overflow-y-auto scrollbar-thin">
-        <div className="p-2">
-          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider px-3 py-2">
+        <div className="p-3">
+          <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wider px-3 py-2">
             Recent Chats
           </h3>
           
           {isLoading ? (
             <div className="space-y-2">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="px-3 py-2">
-                  <div className="h-4 bg-gray-200 rounded animate-pulse mb-2" />
-                  <div className="h-3 bg-gray-100 rounded animate-pulse w-2/3" />
+                <div key={i} className="glass-card-dark rounded-2xl p-3 animate-pulse">
+                  <div className="h-4 bg-white/30 rounded mb-2" />
+                  <div className="h-3 bg-white/20 rounded w-2/3" />
                 </div>
               ))}
             </div>
           ) : conversations.length === 0 ? (
-            <div className="px-3 py-8 text-center text-gray-500">
-              <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No conversations yet</p>
-              <p className="text-xs">Start a new chat to begin</p>
+            <div className="px-3 py-8 text-center">
+              <div className="glass-card-dark w-16 h-16 rounded-3xl flex items-center justify-center mx-auto mb-3">
+                <MessageSquare className="w-8 h-8 text-gray-500" />
+              </div>
+              <p className="text-sm font-medium text-gray-700">No conversations yet</p>
+              <p className="text-xs text-gray-500 mt-1">Start a new chat to begin</p>
             </div>
           ) : (
-            <div className="space-y-1">
+            <div className="space-y-2">
               {conversations.map((conversation) => (
                 <button
                   key={conversation.id}
                   onClick={() => handleConversationClick(conversation.id)}
-                  className={`w-full text-left px-3 py-2 rounded-lg transition-colors hover:bg-gray-100 ${
-                    pathname === `/chat/${conversation.id}` ? 'bg-blue-50 border-r-2 border-blue-600' : ''
+                  className={`w-full text-left px-3 py-3 rounded-2xl transition-all smooth-transition hover-lift ${
+                    pathname === `/chat/${conversation.id}` 
+                      ? 'glass-card-dark border-l-4 border-blue-600 shadow-lg' 
+                      : 'hover:bg-white/30'
                   }`}
                 >
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
-                        {truncateText(conversation.title, 30)}
+                      <p className="text-sm font-semibold text-gray-900 truncate">
+                        {truncateText(conversation.title, 28)}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-600 mt-0.5">
                         {conversation.message_count || 0} messages
                       </p>
                     </div>
-                    <span className="text-xs text-gray-400 ml-2">
+                    <span className="text-xs text-gray-500 mt-0.5 shrink-0">
                       {formatRelativeTime(conversation.updated_at)}
                     </span>
                   </div>
@@ -121,58 +127,66 @@ export function ChatSidebar() {
       </div>
 
       {/* Navigation Menu */}
-      <div className="border-t border-gray-200 p-2">
+      <div className="border-t border-white/30 p-3">
         <nav className="space-y-1">
           <Link
             href="/chat/history"
-            className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-white/40 rounded-2xl transition-all font-medium smooth-transition hover-lift"
           >
-            <History className="w-5 h-5" />
-            <span className="text-sm">Generation History</span>
+            <div className="glass-card-dark p-1.5 rounded-lg">
+              <History className="w-4 h-4" />
+            </div>
+            <span className="text-sm">History</span>
           </Link>
           
           <Link
             href="/chat/credits"
-            className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-white/40 rounded-2xl transition-all font-medium smooth-transition hover-lift"
           >
-            <CreditCard className="w-5 h-5" />
+            <div className="glass-card-dark p-1.5 rounded-lg">
+              <CreditCard className="w-4 h-4" />
+            </div>
             <span className="text-sm">Credits</span>
-            <span className="ml-auto text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
+            <span className="ml-auto text-xs glass-card-dark px-2 py-1 rounded-full font-bold text-blue-600">
               {user?.credits || 0}
             </span>
           </Link>
           
           <Link
             href="/chat/profile"
-            className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-white/40 rounded-2xl transition-all font-medium smooth-transition hover-lift"
           >
-            <User className="w-5 h-5" />
+            <div className="glass-card-dark p-1.5 rounded-lg">
+              <User className="w-4 h-4" />
+            </div>
             <span className="text-sm">Profile</span>
           </Link>
           
           <Link
             href="/chat/settings"
-            className="flex items-center gap-3 px-3 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-white/40 rounded-2xl transition-all font-medium smooth-transition hover-lift"
           >
-            <Settings className="w-5 h-5" />
+            <div className="glass-card-dark p-1.5 rounded-lg">
+              <Settings className="w-4 h-4" />
+            </div>
             <span className="text-sm">Settings</span>
           </Link>
         </nav>
       </div>
 
       {/* User Info */}
-      <div className="border-t border-gray-200 p-4">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-            <span className="text-white text-sm font-semibold">
+      <div className="border-t border-white/30 p-4">
+        <div className="glass-card-dark rounded-2xl p-3 flex items-center gap-3 shadow-lg">
+          <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-md">
+            <span className="text-white text-sm font-bold">
               {user?.username?.charAt(0).toUpperCase() || 'U'}
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">
+            <p className="text-sm font-bold text-gray-900 truncate">
               {user?.username || 'User'}
             </p>
-            <p className="text-xs text-gray-500 capitalize">
+            <p className="text-xs text-gray-600 capitalize font-medium">
               {user?.subscription_tier || 'free'} plan
             </p>
           </div>

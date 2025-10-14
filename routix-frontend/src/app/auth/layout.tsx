@@ -1,4 +1,6 @@
-import { Sparkles } from 'lucide-react'
+'use client'
+
+import { motion } from 'framer-motion'
 import Link from 'next/link'
 
 export default function AuthLayout({
@@ -7,29 +9,48 @@ export default function AuthLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen animated-gradient flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-2">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-white" />
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-8"
+        >
+          <Link href="/" className="inline-block">
+            <div className="glass-card w-16 h-16 rounded-3xl flex items-center justify-center mx-auto shadow-2xl hover-lift smooth-transition">
+              <div className="text-3xl font-black bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                RX
+              </div>
             </div>
-            <span className="text-2xl font-bold text-gray-900">Routix</span>
           </Link>
-        </div>
+        </motion.div>
 
         {/* Auth Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="glass-card rounded-3xl shadow-2xl p-8"
+        >
           {children}
-        </div>
+        </motion.div>
 
         {/* Footer */}
-        <div className="text-center mt-6 text-sm text-gray-600">
-          <Link href="/" className="hover:text-gray-900 transition-colors">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="text-center mt-6"
+        >
+          <Link 
+            href="/" 
+            className="glass-card-dark px-6 py-3 rounded-full inline-flex items-center gap-2 text-gray-700 hover:text-gray-900 font-medium smooth-transition hover-lift"
+          >
             ← Back to home
           </Link>
-        </div>
+        </motion.div>
       </div>
     </div>
   )

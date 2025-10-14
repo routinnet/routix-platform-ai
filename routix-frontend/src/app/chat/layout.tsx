@@ -25,12 +25,12 @@ export default function ChatLayout({
   }
 
   return (
-    <div className="h-screen flex bg-gray-50">
+    <div className="h-screen flex gradient-bg-soft">
       {/* Sidebar */}
       <ChatSidebar />
       
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         <ChatHeader />
         <main className="flex-1 overflow-hidden">
           {children}
