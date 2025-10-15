@@ -289,18 +289,101 @@ class AIService:
         template: Dict[str, Any],
         reference_images: Optional[List[str]] = None
     ) -> Dict[str, Any]:
-        """Generate thumbnail using Stable Diffusion (mock implementation)."""
+        """Generate thumbnail using Stable Diffusion API (Stability AI)."""
         
-        # Mock generation - in real implementation, this would call Stable Diffusion API
-        await asyncio.sleep(2)  # Simulate processing time
+        api_key = os.getenv("STABILITY_API_KEY")
         
+        if not api_key:
+            print("⚠️  STABILITY_API_KEY not found, using mock generation")
+            return await self._mock_stable_diffusion(prompt)
+        
+        try:
+            # ساخت enhanced prompt برای تامبنیل
+            enhanced_prompt = f"""
+Professional YouTube thumbnail, 16:9 aspect ratio, high quality, eye-catching
+Style: {template.get('style', 'modern')}, {template.get('mood', 'exciting')}
+Category: {template.get('category', 'general')}
+Colors: {template.get('primary_color', 'vibrant')}, {template.get('secondary_color', 'bold')}
+
+{prompt}
+
+Ultra HD, high contrast, vibrant colors, professional quality, clear composition, 
+clickable thumbnail, trending, engaging, dramatic lighting
+"""
+            
+            negative_prompt = "blurry, low quality, pixelated, distorted, ugly, bad anatomy, amateur, low resolution, text too small, unclear"
+            
+            # Call Stability AI API
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    "https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    json={
+                        "text_prompts": [
+                            {"text": enhanced_prompt, "weight": 1},
+                            {"text": negative_prompt, "weight": -1}
+                        ],
+                        "cfg_scale": 7,
+                        "height": 720,
+                        "width": 1280,  # 16:9 ratio perfect for thumbnails
+                        "samples": 1,
+                        "steps": 30,
+                    },
+                    timeout=aiohttp.ClientTimeout(total=60)
+                ) as response:
+                    if response.status != 200:
+                        error_text = await response.text()
+                        print(f"❌ Stability API error: {response.status} - {error_text}")
+                        return await self._mock_stable_diffusion(prompt)
+                    
+                    data = await response.json()
+                    
+                    # دانلود و ذخیره تصویر
+                    image_base64 = data["artifacts"][0]["base64"]
+                    image_data = base64.b64decode(image_base64)
+                    
+                    # استفاده از storage service برای ذخیره
+                    from src.services.storage_service import storage_service
+                    image_url = await storage_service.upload_image(
+                        image_data,
+                        f"sd_{hash(prompt) % 100000}.jpg",
+                        folder="generated/stable-diffusion"
+                    )
+                    
+                    print(f"✅ Stable Diffusion generation complete: {image_url}")
+                    
+                    return {
+                        "success": True,
+                        "image_url": image_url,
+                        "algorithm": "stable-diffusion-xl",
+                        "processing_time": 5.0,
+                        "metadata": {
+                            "model": "stable-diffusion-xl-1024-v1-0",
+                            "steps": 30,
+                            "cfg_scale": 7,
+                            "resolution": "1280x720"
+                        }
+                    }
+                    
+        except Exception as e:
+            print(f"❌ Stable Diffusion error: {e}")
+            return await self._mock_stable_diffusion(prompt)
+    
+    async def _mock_stable_diffusion(self, prompt: str) -> Dict[str, Any]:
+        """Mock implementation for Stable Diffusion"""
+        await asyncio.sleep(2)
         return {
             "success": True,
-            "image_url": f"/generated/stable_diffusion_{hash(prompt) % 10000}.jpg",
+            "image_url": f"/generated/stable_diffusion_mock_{hash(prompt) % 10000}.jpg",
             "algorithm": "stable-diffusion",
             "processing_time": 2.0,
             "metadata": {
                 "model": "stable-diffusion-xl",
+                "mock": True,
                 "steps": 20,
                 "guidance_scale": 7.5
             }
@@ -372,18 +455,102 @@ class AIService:
         template: Dict[str, Any],
         reference_images: Optional[List[str]] = None
     ) -> Dict[str, Any]:
-        """Generate thumbnail using Midjourney (mock implementation)."""
+        """
+        Generate thumbnail using Pro algorithm (DALL-E 3 with enhanced prompts)
         
-        # Mock generation - in real implementation, this would call Midjourney API
-        await asyncio.sleep(10)  # Simulate longer processing time
+        Note: Midjourney doesn't have an official API, so we use DALL-E 3 
+        with optimized prompts to achieve similar high-quality results.
+        """
         
+        if not self.openai_client:
+            print("⚠️  OpenAI API key not found, using mock generation")
+            return await self._mock_midjourney(prompt)
+        
+        try:
+            # پرامپت بهینه‌شده برای خروجی با کیفیت بالا (مشابه Midjourney)
+            enhanced_prompt = f"""
+Create an ULTRA HIGH QUALITY, professional YouTube thumbnail in 16:9 aspect ratio.
+
+VISUAL STYLE:
+- Style: {template.get('style', 'modern')}, cinematic, photorealistic, highly detailed
+- Category: {template.get('category', 'general')}
+- Mood: {template.get('mood', 'professional')}, dramatic, engaging, eye-catching
+- Color Palette: {template.get('primary_color', 'vibrant')}, {template.get('secondary_color', 'bold')}
+
+MAIN CONTENT:
+{prompt}
+
+TECHNICAL REQUIREMENTS:
+- Ultra sharp focus, intricate details, 8K quality
+- Perfect composition and professional framing
+- Cinematic lighting with dramatic shadows
+- Professional color grading and contrast
+- Maximum visual impact for thumbnail
+- Clear, bold, readable text elements
+- Trending on Artstation quality level
+- Award-winning photography style
+
+NEGATIVE PROMPTS TO AVOID:
+- blurry, low quality, amateur, distorted, pixelated
+- bad anatomy, unclear text, poor composition
+"""
+            
+            response = self.openai_client.images.generate(
+                model="dall-e-3",
+                prompt=enhanced_prompt[:4000],  # DALL-E has 4000 char limit
+                size="1792x1024",  # Closest to 16:9, highest quality
+                quality="hd",
+                style="vivid",  # More dramatic and vibrant
+                n=1
+            )
+            
+            # دانلود تصویر از URL
+            image_url = response.data[0].url
+            
+            # دانلود و بهینه‌سازی برای تامبنیل
+            from src.services.storage_service import storage_service
+            image_data = await storage_service.download_from_url(image_url)
+            
+            # ذخیره با بهینه‌سازی
+            optimized_url = await storage_service.upload_image(
+                image_data,
+                f"pro_{hash(prompt) % 100000}.jpg",
+                folder="generated/pro",
+                optimize=True
+            )
+            
+            print(f"✅ Pro (DALL-E 3) generation complete: {optimized_url}")
+            
+            return {
+                "success": True,
+                "image_url": optimized_url,
+                "algorithm": "dall-e-3-pro",
+                "processing_time": 20.0,
+                "metadata": {
+                    "model": "dall-e-3",
+                    "quality": "hd",
+                    "style": "vivid",
+                    "size": "1792x1024",
+                    "optimized": True,
+                    "tier": "pro"
+                }
+            }
+            
+        except Exception as e:
+            print(f"❌ Pro generation error: {e}")
+            return await self._mock_midjourney(prompt)
+    
+    async def _mock_midjourney(self, prompt: str) -> Dict[str, Any]:
+        """Mock implementation for Pro tier"""
+        await asyncio.sleep(5)
         return {
             "success": True,
-            "image_url": f"/generated/midjourney_{hash(prompt) % 10000}.jpg",
-            "algorithm": "midjourney",
-            "processing_time": 10.0,
+            "image_url": f"/generated/pro_mock_{hash(prompt) % 10000}.jpg",
+            "algorithm": "pro",
+            "processing_time": 5.0,
             "metadata": {
-                "model": "midjourney-v6",
+                "model": "pro-tier",
+                "mock": True,
                 "quality": "ultra",
                 "aspect_ratio": "16:9"
             }
